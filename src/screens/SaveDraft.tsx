@@ -1,0 +1,48 @@
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
+import { RootState } from '../utils/reduxUtil';
+import Card from '../components/common/Card';
+import Header from '../components/common/Header';
+import { useAppTheme } from '../hooks/themeContext';
+import { wp } from '../constants/ResponsiveUI';
+
+export default function SaveDraft() {
+  const { theme } = useAppTheme();
+  const saveDraft = useSelector((state: RootState) => state.user.drafts);
+  console.log('save draft', saveDraft);
+  const renderItem = ({ item }: any) => <Card item={item} />;
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
+      <Header text="SaveDraft" backText="Back" />
+      <FlatList
+        data={saveDraft}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        renderItem={renderItem}
+        contentContainerStyle={styles.cardContainer}
+        // eslint-disable-next-line react/no-unstable-nested-components
+        ListEmptyComponent={() => (
+          <View>
+            <Text style={styles.emptyData}>No data</Text>
+          </View>
+        )}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: wp(20),
+  },
+  cardContainer: {
+    gap: 10,
+  },
+  emptyData: {
+    textAlign: 'center',
+  },
+});
