@@ -1,4 +1,8 @@
-import { GestureResponderEvent, TextInputProps } from 'react-native';
+import {
+  GestureResponderEvent,
+  TextInputProps,
+  TouchableOpacityProps,
+} from 'react-native';
 
 export interface InputBoxProps extends TextInputProps {}
 
@@ -20,7 +24,6 @@ export interface HeaderProps {
 }
 
 export interface AddItemProps {
-  closeSheet: () => void;
   show?: true;
   lang?: 'en';
   pickerButtonOnPress?: (item: any) => void;
@@ -33,4 +36,29 @@ export interface Todo {
   countryCode: string;
   dob: string;
   favorite: string | boolean;
+}
+
+export interface ModalBoxProps {
+  item: {};
+  modalVisible: boolean;
+  setModalVisible: (visible: boolean) => void;
+}
+
+export interface AddItemProps {
+  onClose: () => void;
+}
+export interface TotalButtonProps {
+  onPress?: () => void;
+}
+
+export interface StyledButtonProps extends TouchableOpacityProps {
+  title: string;
+  onPress: () => void;
+  isSelected?: boolean;
+  color?: string;
+  theme?: {
+    background: string;
+    text: string;
+    button: string;
+  };
 }

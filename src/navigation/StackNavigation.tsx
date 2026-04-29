@@ -4,6 +4,7 @@ import TodoList from '../screens/TodoList';
 import AddItem from '../screens/AddItem';
 import Favorite from '../screens/Favorite';
 import SaveDraft from '../screens/SaveDraft';
+import TodoGraph from '../components/common/TodoGraph';
 
 const Stack = createStackNavigator();
 
@@ -18,6 +19,7 @@ const StackNavigation = () => {
         <Stack.Screen name="AddItem" component={AddItem} />
         <Stack.Screen name="Favorite" component={Favorite} />
         <Stack.Screen name="SaveDraft" component={SaveDraft} />
+        <Stack.Screen name="TodoGraph" component={TodoGraph} />
       </Stack.Navigator>
     </NavigationContainer>
   );

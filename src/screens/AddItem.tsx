@@ -1,5 +1,5 @@
-import { StyleSheet, Switch, Text, View } from 'react-native';
-import React, { useState } from 'react';
+import { StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
 
 import { CountryPicker } from 'react-native-country-codes-picker';
 import DatePicker from 'react-native-date-picker';
@@ -13,7 +13,7 @@ import Header from '../components/common/Header';
 import Button from '../components/common/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { addDraft, addTodo } from '../redux/slice/toDoSlice';
+import { addDraft, addTodo, updateTodo } from '../redux/slice/toDoSlice';
 import Toast from 'react-native-toast-message';
 import { RootState } from '../utils/reduxUtil';
 import { getUniqueId } from '../helpers/type';
@@ -22,11 +22,13 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { Todo } from '../interfaces/types';
+import { AddItemProps, Todo } from '../interfaces/types';
 import { route } from '../constants/routes';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import ModalBox from '../components/common/ModalBox';
+import fontFamilies from '../assets/fonts/font';
 
-export default function AddItem() {
+export default function AddItem({ onClose }: AddItemProps) {
   const { theme } = useAppTheme();
   const routes = useRoute();
   const { data } = (routes.params as { data: Todo }) || {};
@@ -41,6 +43,7 @@ export default function AddItem() {
   const [favorite, setFavorite] = useState<boolean | string>(
     data?.favorite ?? false,
   );
+  const [showModal, setShowModal] = useState(false);
 
   const [dob, setDob] = useState(data?.dob ? new Date(data.dob) : new Date());
   const [openDate, setOpenDate] = useState(false);
@@ -83,6 +86,16 @@ export default function AddItem() {
       return false;
     }
 
+    if (phone.length !== 10) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Phone',
+        text2: 'Phone must be exactly 10 digits',
+        position: 'top',
+      });
+      return false;
+    }
+
     const emailExists = todos.some(u => {
       if (item) {
         return u.email === email && u.id !== data?.id;
@@ -104,8 +117,6 @@ export default function AddItem() {
   };
 
   const handleSubmit = () => {
-    if (!dataValidation()) return;
-
     const DATA = {
       id: item ? data.id : getUniqueId(),
       name,
@@ -115,18 +126,29 @@ export default function AddItem() {
       dob: dob.toISOString(),
       favorite,
     };
-
     if (isAllFieldsFilled()) {
-      dispatch(addTodo(DATA));
+      if (!dataValidation()) return;
 
-      Toast.show({
-        type: 'success',
-        text1: item ? 'Updated!' : 'Saved!',
-        text2: item ? 'Data updated successfully' : 'Data saved successfully',
-        position: 'top',
-      });
+      if (DATA) {
+        const isUnchanged =
+          data?.name === DATA?.name &&
+          data?.email === DATA?.email &&
+          data?.phone === DATA?.phone &&
+          data?.dob === DATA?.dob;
 
-      navigation.navigate(route.main);
+        if (isUnchanged) {
+          navigation.navigate(route.main);
+          handleCancel();
+          return;
+        }
+        if (!item) {
+          dispatch(addTodo(DATA));
+          setShowModal(true);
+        } else {
+          dispatch(updateTodo(DATA));
+          setShowModal(true);
+        }
+      }
     } else if (isAnyFieldFilled()) {
       dispatch(addDraft(DATA));
 
@@ -150,7 +172,17 @@ export default function AddItem() {
 
     handleCancel();
   };
-
+  useEffect(() => {
+    if (showModal) {
+      const timer = setTimeout(() => {
+        setShowModal(false);
+        handleCancel();
+        navigation.navigate(route.main);
+        onClose?.();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showModal, onClose, navigation]);
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.card }]}>
       {item ? (
@@ -172,24 +204,26 @@ export default function AddItem() {
         onChangeText={setEmail}
         style={styles.input}
         autoCapitalize="none"
-        contextMenuHidden={true}
-        selectionColor={color.red}
       />
 
       <View style={styles.phoneContainer}>
-        <Button
-          title={countryCode}
-          onPress={() => setOpenCountry(true)}
-          color={theme.button}
-        />
-
-        <InputBox
+        <View style={styles.codeButton}>
+          <Button
+            title={countryCode}
+            onPress={() => setOpenCountry(true)}
+            color={theme.button}
+          />
+        </View>
+        <TextInput
           placeholder="Phone"
           value={phone}
-          onChangeText={setPhone}
-          style={styles.inputCode}
+          onChangeText={(text: string) => {
+            const cleaned = text.replace(/[^0-9]/g, '');
+            setPhone(cleaned);
+          }}
+          style={styles.phoneInput}
           maxLength={10}
-          keyboardType="phone-pad"
+          keyboardType="number-pad"
         />
       </View>
 
@@ -202,7 +236,7 @@ export default function AddItem() {
       />
 
       <View style={styles.favorite}>
-        <Text style={{ color: theme.text }}>Favorite</Text>
+        <Text style={[styles.favText, { color: theme.text }]}>Favorite</Text>
         <Switch value={!!favorite} onValueChange={setFavorite} />
       </View>
 
@@ -231,7 +265,11 @@ export default function AddItem() {
           setOpenCountry(false);
         }}
       />
-
+      <ModalBox
+        item={item}
+        modalVisible={showModal}
+        setModalVisible={setShowModal}
+      />
       <DatePicker
         modal
         open={openDate}
@@ -252,7 +290,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: wp(20),
   },
+
   input: {
+    width: '100%',
     height: hp(50),
     borderWidth: 1,
     borderColor: color.borderColor,
@@ -260,35 +300,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(15),
     backgroundColor: color.liteWhite,
     marginBottom: hp(10),
-    justifyContent: 'center',
+    fontFamily: fontFamilies.poppins.Regular,
   },
-  inputCode: {
-    flex: 1,
+  codeButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingRight: 10,
+    height: 50,
+  },
+  phoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: color.borderColor,
     borderRadius: 8,
+    paddingHorizontal: 10,
+    marginVertical: 10,
     backgroundColor: color.liteWhite,
-    marginBottom: hp(10),
-    marginTop: 10,
-    padding: 12,
+    height: 50,
   },
-  phoneContainer: {
+
+  phoneInput: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
+    fontSize: 16,
+    color: '#333',
+    height: '100%',
   },
+
   buttonContainer: {
     flexDirection: 'row',
     gap: 20,
     justifyContent: 'center',
     marginTop: 20,
   },
+
   favorite: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     marginTop: 10,
+  },
+  favText: {
+    fontFamily: fontFamilies.poppins.Regular,
   },
 });

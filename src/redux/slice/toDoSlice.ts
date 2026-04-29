@@ -6,11 +6,6 @@ interface TodoState {
   drafts: Todo[];
   editItem: Todo | null;
 }
-interface TodoState {
-  todos: Todo[];
-  drafts: Todo[];
-  editItem: Todo | null;
-}
 
 const initialState: TodoState = {
   todos: [],
@@ -23,35 +18,60 @@ const slice = createSlice({
   initialState,
   reducers: {
     addTodo: (state, action: PayloadAction<Todo>) => {
-      state.todos.push(action.payload);
+      const index = state.todos.findIndex(
+        item => item.id === action.payload.id,
+      );
+
+      if (index !== -1) {
+        state.todos[index] = action.payload;
+      } else {
+        state.todos.push(action.payload);
+      }
+
       state.drafts = state.drafts.filter(
         draft => draft.id !== action.payload.id,
       );
     },
 
     updateTodo: (state, action: PayloadAction<Todo>) => {
-      state.todos = state.todos.map(i =>
-        i.id === action.payload.id ? action.payload : i,
+      state.todos = state.todos.map(item =>
+        item.id === action.payload.id ? action.payload : item,
       );
-      state.editItem = null;
     },
 
-    deleteTodo: (state, action: PayloadAction<Todo['id']>) => {
-      state.todos = state.todos.filter(i => i.id !== action.payload);
+    deleteItem: (state, action: PayloadAction<Todo['id']>) => {
+      state.todos = state.todos.filter(item => item.id !== action.payload);
+      state.drafts = state.drafts.filter(item => item.id !== action.payload);
     },
 
     toggleFavorite: (state, action: PayloadAction<Todo['id']>) => {
-      state.todos = state.todos.map(i =>
-        i.id === action.payload ? { ...i, favorite: !i.favorite } : i,
+      state.todos = state.todos.map(item =>
+        item.id === action.payload
+          ? { ...item, favorite: !item.favorite }
+          : item,
+      );
+
+      state.drafts = state.drafts.map(item =>
+        item.id === action.payload
+          ? { ...item, favorite: !item.favorite }
+          : item,
       );
     },
 
     addDraft: (state, action: PayloadAction<Todo>) => {
-      state.drafts.push(action.payload);
+      const index = state.drafts.findIndex(
+        item => item.id === action.payload.id,
+      );
+
+      if (index !== -1) {
+        state.drafts[index] = action.payload;
+      } else {
+        state.drafts.push(action.payload);
+      }
     },
 
     deleteDraft: (state, action: PayloadAction<Todo['id']>) => {
-      state.drafts = state.drafts.filter(i => i.id !== action.payload);
+      state.drafts = state.drafts.filter(item => item.id !== action.payload);
     },
   },
 });
@@ -59,7 +79,7 @@ const slice = createSlice({
 export const {
   addTodo,
   updateTodo,
-  deleteTodo,
+  deleteItem,
   toggleFavorite,
   addDraft,
   deleteDraft,

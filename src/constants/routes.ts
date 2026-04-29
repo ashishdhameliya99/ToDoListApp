@@ -3,4 +3,5 @@ export const route = {
   favorite: 'Favorite',
   saveDraft: 'SaveDraft',
   main: 'TodoList',
+  todoGraph: 'TodoGraph',
 };

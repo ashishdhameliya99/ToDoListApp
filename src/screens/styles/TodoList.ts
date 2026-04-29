@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { hp, rf, wp } from '../../constants/ResponsiveUI';
 import { color } from '../../utils/color';
+import fontFamilies from '../../assets/fonts/font';
 
 export const styles = StyleSheet.create({
   container: {
@@ -20,6 +21,7 @@ export const styles = StyleSheet.create({
   buttonText: {
     color: color.white,
     fontSize: rf(30),
+    fontFamily: fontFamilies.poppins.Regular,
     fontWeight: 'bold',
   },
   buttonContainer: {

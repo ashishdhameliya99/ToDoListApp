@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, ListRenderItem, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -7,17 +7,20 @@ import Card from '../components/common/Card';
 import Header from '../components/common/Header';
 import { useAppTheme } from '../hooks/themeContext';
 import { wp } from '../constants/ResponsiveUI';
+import { Todo } from '../interfaces/types';
 
 export default function SaveDraft() {
   const { theme } = useAppTheme();
   const saveDraft = useSelector((state: RootState) => state.user.drafts);
-  console.log('save draft', saveDraft);
-  const renderItem = ({ item }: any) => <Card item={item} />;
+
+  const renderItem: ListRenderItem<Todo> = ({ item }) => <Card item={item} />;
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <Header text="SaveDraft" backText="Back" />
+
       <FlatList
         data={saveDraft}
         keyExtractor={(item, index) => `${item.id}-${index}`}
@@ -29,6 +32,7 @@ export default function SaveDraft() {
             <Text style={styles.emptyData}>No data</Text>
           </View>
         )}
+        showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );

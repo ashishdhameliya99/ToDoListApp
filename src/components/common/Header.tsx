@@ -4,6 +4,7 @@ import { hp, rf, wp } from '../../constants/ResponsiveUI';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../../hooks/themeContext';
 import { HeaderProps } from '../../interfaces/types';
+import fontFamilies from '../../assets/fonts/font';
 
 export default function Header({ text, backText }: HeaderProps) {
   const navigation = useNavigation();
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: rf(16),
     marginBottom: hp(10),
-    fontWeight: 'bold',
+    fontFamily: fontFamilies.poppins.bold,
   },
   header: {
     flexDirection: 'row',
@@ -35,6 +36,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginRight: wp(15),
     fontSize: rf(16),
-    fontWeight: 'bold',
+    fontFamily: fontFamilies.poppins.bold,
   },
 });

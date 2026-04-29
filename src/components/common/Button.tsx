@@ -3,6 +3,8 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { lightTheme, darkTheme } from '../../utils/color';
 import { CustomButtonProps } from '../../interfaces/types';
 import { useAppTheme } from '../../hooks/themeContext';
+import fontFamilies from '../../assets/fonts/font';
+import { wp } from '../../constants/ResponsiveUI';
 
 const CustomButton = ({ title, onPress }: CustomButtonProps) => {
   const { dark } = useAppTheme();
@@ -11,13 +13,14 @@ const CustomButton = ({ title, onPress }: CustomButtonProps) => {
   const styles = StyleSheet.create({
     button: {
       backgroundColor: theme.button,
-      padding: 12,
-      marginVertical: 5,
+      padding: wp(12),
       borderRadius: 8,
+      paddingHorizontal: wp(20),
     },
     buttonTitle: {
       color: '#fff',
       textAlign: 'center',
+      fontFamily: fontFamilies.poppins.Regular,
     },
   });
 

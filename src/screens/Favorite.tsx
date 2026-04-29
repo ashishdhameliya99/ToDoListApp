@@ -11,8 +11,10 @@ import { wp } from '../constants/ResponsiveUI';
 export default function Favorite() {
   const { theme } = useAppTheme();
   const todos = useSelector((state: RootState) => state.user.todos);
+  const saveDraft = useSelector((state: RootState) => state.user.drafts);
   const favoriteList = todos.filter(item => item.favorite);
 
+  const allData = [...saveDraft, ...favoriteList];
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
@@ -25,10 +27,11 @@ export default function Favorite() {
         </Text>
       ) : (
         <FlatList
-          data={favoriteList}
+          data={allData}
           keyExtractor={item => item.id.toString()}
           renderItem={({ item }) => <Card item={item} />}
           contentContainerStyle={styles.cardContainer}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </SafeAreaView>
